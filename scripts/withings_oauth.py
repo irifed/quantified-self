@@ -13,7 +13,7 @@ from urllib.parse import urlencode, urlsplit, urlunsplit
 import httpx
 import uvicorn
 from dotenv import dotenv_values, set_key
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Query
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 AUTHORIZATION_URL = "https://account.withings.com/oauth2_user/authorize2"
@@ -105,6 +105,7 @@ def create_app(
     state: str | None = None,
     token_exchange: Callable[[OAuthSettings, str], dict[str, Any]] = exchange_code,
     open_browser: bool = True,
+    on_success: Callable[[], None] | None = None,
 ) -> FastAPI:
     expected_state = state or secrets.token_urlsafe(32)
     authorization_url = build_authorization_url(settings, expected_state)
@@ -118,11 +119,8 @@ def create_app(
 
     app = FastAPI(title="Withings OAuth Helper", lifespan=lifespan)
 
-    @app.get("/", include_in_schema=False)
-    def authorize() -> RedirectResponse:
-        return RedirectResponse(authorization_url)
-
     def callback(
+        background_tasks: BackgroundTasks,
         code: str | None = Query(default=None),
         state: str | None = Query(default=None),
         error: str | None = Query(default=None),
@@ -144,6 +142,8 @@ def create_app(
         print(f"WITHINGS_ACCESS_TOKEN={access_token}")
         print(f"WITHINGS_REFRESH_TOKEN={refresh_token}")
         print(f"Tokens saved to {settings.env_path}")
+        if on_success is not None:
+            background_tasks.add_task(on_success)
         return HTMLResponse(
             "<h1>Withings authorization complete</h1>"
             "<p>Access and refresh tokens were printed and saved to <code>.env</code>. "
@@ -151,13 +151,28 @@ def create_app(
         )
 
     app.add_api_route(settings.callback_path, callback, methods=["GET"], include_in_schema=False)
+
+    if settings.callback_path != "/":
+
+        @app.get("/", include_in_schema=False)
+        def authorize() -> RedirectResponse:
+            return RedirectResponse(authorization_url)
+
     return app
 
 
 def main() -> None:
     settings = OAuthSettings.from_env()
-    app = create_app(settings)
-    uvicorn.run(app, host=settings.host, port=settings.port)
+    server_holder: dict[str, uvicorn.Server] = {}
+
+    def stop_server() -> None:
+        server_holder["server"].should_exit = True
+
+    app = create_app(settings, on_success=stop_server)
+    config = uvicorn.Config(app, host=settings.host, port=settings.port)
+    server = uvicorn.Server(config)
+    server_holder["server"] = server
+    server.run()
 
 
 if __name__ == "__main__":

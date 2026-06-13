@@ -83,6 +83,33 @@ def test_callback_rejects_invalid_state(tmp_path: Path) -> None:
     assert response.json()["detail"] == "Invalid OAuth state"
 
 
+def test_root_redirect_uri_processes_callback_instead_of_reauthorizing(tmp_path: Path) -> None:
+    oauth_settings = OAuthSettings(
+        client_id="client-id",
+        client_secret="client-secret",
+        redirect_uri="https://example.ngrok-free.dev",
+        env_path=tmp_path / ".env",
+    )
+    completed: list[bool] = []
+    app = create_app(
+        oauth_settings,
+        state="expected",
+        token_exchange=lambda _settings, _code: {
+            "access_token": "access-token",
+            "refresh_token": "refresh-token",
+        },
+        open_browser=False,
+        on_success=lambda: completed.append(True),
+    )
+
+    with TestClient(app) as client:
+        response = client.get("/?code=auth-code&state=expected")
+
+    assert response.status_code == 200
+    assert "authorization complete" in response.text
+    assert completed == [True]
+
+
 def test_save_tokens_replaces_existing_values(tmp_path: Path) -> None:
     env_path = tmp_path / ".env"
     env_path.write_text("WITHINGS_ACCESS_TOKEN=old\nWITHINGS_REFRESH_TOKEN=old\n")

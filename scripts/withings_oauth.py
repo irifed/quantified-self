@@ -28,6 +28,8 @@ class OAuthSettings:
     redirect_uri: str
     env_path: Path
     scope: str = DEFAULT_SCOPE
+    host: str = "127.0.0.1"
+    port: int = 8000
 
     @classmethod
     def from_env(cls, env_path: Path = Path(".env")) -> "OAuthSettings":
@@ -45,24 +47,14 @@ class OAuthSettings:
             client_secret=str(required["WITHINGS_CLIENT_SECRET"]),
             redirect_uri=str(required["WITHINGS_REDIRECT_URI"]),
             env_path=env_path,
+            host=str(values.get("WITHINGS_OAUTH_HOST") or "127.0.0.1"),
+            port=int(values.get("WITHINGS_OAUTH_PORT") or 8000),
         )
 
     @property
     def callback_path(self) -> str:
         path = urlsplit(self.redirect_uri).path
         return path or "/"
-
-    @property
-    def server_host(self) -> str:
-        return urlsplit(self.redirect_uri).hostname or "127.0.0.1"
-
-    @property
-    def server_port(self) -> int:
-        parsed = urlsplit(self.redirect_uri)
-        if parsed.port is not None:
-            return parsed.port
-        return 443 if parsed.scheme == "https" else 80
-
 
 def build_authorization_url(settings: OAuthSettings, state: str) -> str:
     parsed = urlsplit(AUTHORIZATION_URL)
@@ -165,7 +157,7 @@ def create_app(
 def main() -> None:
     settings = OAuthSettings.from_env()
     app = create_app(settings)
-    uvicorn.run(app, host=settings.server_host, port=settings.server_port)
+    uvicorn.run(app, host=settings.host, port=settings.port)
 
 
 if __name__ == "__main__":

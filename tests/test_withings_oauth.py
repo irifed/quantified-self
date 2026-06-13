@@ -29,6 +29,22 @@ def test_authorization_url_contains_required_parameters(tmp_path: Path) -> None:
     }
 
 
+def test_public_redirect_does_not_change_local_bind_address(tmp_path: Path) -> None:
+    env_path = tmp_path / ".env"
+    env_path.write_text(
+        "WITHINGS_CLIENT_ID=client-id\n"
+        "WITHINGS_CLIENT_SECRET=client-secret\n"
+        "WITHINGS_REDIRECT_URI=https://example.ngrok-free.dev/callback\n"
+    )
+
+    result = OAuthSettings.from_env(env_path)
+
+    assert result.redirect_uri == "https://example.ngrok-free.dev/callback"
+    assert result.callback_path == "/callback"
+    assert result.host == "127.0.0.1"
+    assert result.port == 8000
+
+
 def test_callback_exchanges_and_saves_tokens(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:

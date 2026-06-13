@@ -31,6 +31,20 @@ The script opens the Withings authorization page, receives the callback through 
 the access and refresh tokens, and writes both values to `.env`. The sync service refreshes access
 tokens automatically and stores rotated refresh tokens in PostgreSQL.
 
+For an ngrok callback, forward the public URL to the local OAuth server and include `/callback` in
+the registered URI:
+
+```env
+WITHINGS_REDIRECT_URI=https://your-domain.ngrok-free.dev/callback
+WITHINGS_OAUTH_HOST=127.0.0.1
+WITHINGS_OAUTH_PORT=8000
+```
+
+```bash
+ngrok http 8000
+uv run python scripts/withings_oauth.py
+```
+
 Do not commit `.env` or real credentials.
 
 ## Run locally

@@ -1,0 +1,75 @@
+x-app-environment: &app-environment
+  POSTGRES_DB: ${POSTGRES_DB:-health}
+  POSTGRES_USER: ${POSTGRES_USER:-health}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  DATABASE_HOST: timescaledb
+  DATABASE_PORT: 5432
+  WITHINGS_CLIENT_ID: ${WITHINGS_CLIENT_ID:-}
+  WITHINGS_CLIENT_SECRET: ${WITHINGS_CLIENT_SECRET:-}
+  WITHINGS_REFRESH_TOKEN: ${WITHINGS_REFRESH_TOKEN:-}
+  TZ: ${TZ:-Europe/Amsterdam}
+  SYNC_INTERVAL_HOURS: ${SYNC_INTERVAL_HOURS:-6}
+  INITIAL_SYNC_DAYS: ${INITIAL_SYNC_DAYS:-3650}
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg17
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-health}
+      POSTGRES_USER: ${POSTGRES_USER:-health}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: ${TZ:-Europe/Amsterdam}
+    volumes:
+      - timescale-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-health} -d ${POSTGRES_DB:-health}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  migrations:
+    build: .
+    command: ["uv", "run", "--no-sync", "alembic", "upgrade", "head"]
+    environment: *app-environment
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+    restart: "no"
+
+  sync:
+    build: .
+    command: ["uv", "run", "--no-sync", "health-observatory", "scheduler"]
+    environment: *app-environment
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:12.0.1
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      POSTGRES_DB: ${POSTGRES_DB:-health}
+      POSTGRES_USER: ${POSTGRES_USER:-health}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: ${TZ:-Europe/Amsterdam}
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+volumes:
+  timescale-data:
+  grafana-data:

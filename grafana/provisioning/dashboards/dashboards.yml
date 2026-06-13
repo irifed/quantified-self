@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: Health Observatory
+    orgId: 1
+    folder: Health Observatory
+    type: file
+    disableDeletion: true
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards

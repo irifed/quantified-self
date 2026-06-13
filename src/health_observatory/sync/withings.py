@@ -41,6 +41,13 @@ def normalize_measure_group(group: dict[str, Any]) -> dict[str, Any]:
     normalized: dict[str, Any] = {
         "timestamp": datetime.fromtimestamp(int(group["date"]), tz=UTC),
         "withings_grpid": int(group["grpid"]),
+        "weight_kg": None,
+        "fat_ratio_pct": None,
+        "fat_mass_kg": None,
+        "fat_free_mass_kg": None,
+        "muscle_mass_kg": None,
+        "hydration_kg": None,
+        "bone_mass_kg": None,
         "source": "withings",
         "raw_payload": group,
         "unknown_measurements": [],

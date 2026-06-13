@@ -39,6 +39,9 @@ def test_normalize_measure_group_preserves_unknown_measurements() -> None:
     assert result["withings_grpid"] == 42
     assert result["weight_kg"] == pytest.approx(72.345)
     assert result["fat_ratio_pct"] == pytest.approx(21.4)
+    assert result["muscle_mass_kg"] is None
+    assert result["hydration_kg"] is None
+    assert result["bone_mass_kg"] is None
     assert result["unknown_measurements"] == [
         {"type": 999, "value": 12, "unit": -1, "scaled_value": pytest.approx(1.2)}
     ]

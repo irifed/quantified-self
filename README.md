@@ -12,7 +12,7 @@ measurement type are retained alongside normalized values.
 
 ## Prerequisites
 
-- Docker with Docker Compose
+- Podman with Compose support
 - A Withings developer application and refresh token
 - `uv` for local development
 
@@ -31,7 +31,7 @@ Do not commit `.env` or real credentials.
 cp .env.example .env
 # Fill in WITHINGS_CLIENT_ID, WITHINGS_CLIENT_SECRET, WITHINGS_REFRESH_TOKEN,
 # POSTGRES_PASSWORD, and GRAFANA_ADMIN_PASSWORD.
-docker compose up --build -d
+podman compose up --build -d
 ```
 
 Open Grafana at <http://localhost:3000>. The provisioned **Body Recomposition** dashboard uses the
@@ -41,13 +41,13 @@ Useful commands:
 
 ```bash
 # Follow the scheduled sync
-docker compose logs -f sync
+podman compose logs -f sync
 
 # Trigger a one-off sync
-docker compose run --rm sync uv run health-observatory sync
+podman compose run --rm sync uv run --no-sync health-observatory sync
 
 # Stop services without deleting data
-docker compose down
+podman compose down
 ```
 
 The first sync imports `INITIAL_SYNC_DAYS` of history. Later runs overlap the prior day and upsert,
@@ -60,7 +60,7 @@ uv sync
 uv run pytest
 uv run ruff check .
 uv run mypy
-docker compose --env-file .env.example config
+podman compose --env-file .env.example config
 ```
 
 Create a local `.env` only when running the stack. Tests do not require Withings credentials or a
@@ -72,7 +72,7 @@ Compose runs `alembic upgrade head` before starting the sync service or Grafana.
 manually:
 
 ```bash
-docker compose run --rm migrations
+podman compose run --rm migrations
 ```
 
 Milestone 1 intentionally does not include intervals.icu, recovery, workouts, annotations, or

@@ -7,10 +7,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy
 
-COPY pyproject.toml uv.lock alembic.ini ./
+COPY pyproject.toml uv.lock alembic.ini README.md ./
 COPY migrations ./migrations
 COPY src ./src
 
 RUN uv sync --frozen --no-dev
 
-CMD ["uv", "run", "health-observatory", "scheduler"]
+CMD ["uv", "run", "--no-sync", "health-observatory", "scheduler"]

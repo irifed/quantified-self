@@ -56,6 +56,9 @@ cp .env.example .env
 podman compose up --build -d
 ```
 
+`DATABASE_URL` is optional. Compose builds the connection URL from the PostgreSQL fields safely,
+including when the password contains URL-special characters.
+
 Open Grafana at <http://localhost:3000>. The provisioned **Body Recomposition** dashboard uses the
 TimescaleDB datasource automatically.
 

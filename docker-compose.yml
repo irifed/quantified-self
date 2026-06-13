@@ -1,5 +1,9 @@
 x-app-environment: &app-environment
-  DATABASE_URL: ${DATABASE_URL}
+  POSTGRES_DB: ${POSTGRES_DB:-health}
+  POSTGRES_USER: ${POSTGRES_USER:-health}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  DATABASE_HOST: timescaledb
+  DATABASE_PORT: 5432
   WITHINGS_CLIENT_ID: ${WITHINGS_CLIENT_ID:-}
   WITHINGS_CLIENT_SECRET: ${WITHINGS_CLIENT_SECRET:-}
   WITHINGS_REFRESH_TOKEN: ${WITHINGS_REFRESH_TOKEN:-}
@@ -12,8 +16,8 @@ services:
   timescaledb:
     image: timescale/timescaledb:latest-pg17
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB:-health}
+      POSTGRES_USER: ${POSTGRES_USER:-health}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       TZ: ${TZ:-Europe/Amsterdam}
     volumes:
@@ -21,7 +25,7 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-health} -d ${POSTGRES_DB:-health}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -51,8 +55,8 @@ services:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
       GF_USERS_ALLOW_SIGN_UP: "false"
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB:-health}
+      POSTGRES_USER: ${POSTGRES_USER:-health}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       TZ: ${TZ:-Europe/Amsterdam}
     ports:

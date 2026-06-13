@@ -18,10 +18,18 @@ measurement type are retained alongside normalized values.
 
 ## Withings credentials
 
-Create an application in the Withings Developer Dashboard. Set its callback URL to a local URL
-you control, then complete the Withings OAuth 2 authorization-code flow and put the resulting
-refresh token in `.env`. The sync service refreshes access tokens automatically and stores rotated
-refresh tokens in PostgreSQL.
+Create an application in the Withings Developer Dashboard and set its callback URL to the exact
+value of `WITHINGS_REDIRECT_URI`. Then obtain tokens with the local OAuth helper:
+
+```bash
+cp .env.example .env
+# Fill in WITHINGS_CLIENT_ID and WITHINGS_CLIENT_SECRET.
+uv run python scripts/withings_oauth.py
+```
+
+The script opens the Withings authorization page, receives the callback through FastAPI, prints
+the access and refresh tokens, and writes both values to `.env`. The sync service refreshes access
+tokens automatically and stores rotated refresh tokens in PostgreSQL.
 
 Do not commit `.env` or real credentials.
 

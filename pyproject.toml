@@ -7,10 +7,12 @@ requires-python = ">=3.13"
 dependencies = [
     "alembic>=1.14,<2",
     "apscheduler>=3.11,<4",
+    "fastapi>=0.115,<1",
     "httpx>=0.28,<1",
     "psycopg[binary]>=3.2,<4",
     "pydantic-settings>=2.7,<3",
     "sqlalchemy>=2.0,<3",
+    "uvicorn>=0.34,<1",
 ]
 
 [dependency-groups]
@@ -34,6 +36,7 @@ packages = ["src/health_observatory"]
 [tool.pytest.ini_options]
 addopts = "--cov=health_observatory --cov-report=term-missing"
 testpaths = ["tests"]
+pythonpath = ["."]
 
 [tool.ruff]
 line-length = 100

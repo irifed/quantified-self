@@ -1,0 +1,79 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {"type": "postgres", "uid": "timescaledb"},
+      "fieldConfig": {"defaults": {"unit": "masskg"}, "overrides": []},
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 0},
+      "id": 1,
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}},
+      "targets": [{"format": "time_series", "rawQuery": true, "rawSql": "WITH samples AS (SELECT timestamp, weight_kg AS value FROM body_composition WHERE $__timeFilter(timestamp) AND weight_kg IS NOT NULL), trends AS (SELECT timestamp AS time, 'Raw' AS metric, value FROM samples UNION ALL SELECT timestamp, '7-day average', AVG(value) OVER (ORDER BY timestamp RANGE BETWEEN INTERVAL '7 days' PRECEDING AND CURRENT ROW) FROM samples UNION ALL SELECT timestamp, '28-day average', AVG(value) OVER (ORDER BY timestamp RANGE BETWEEN INTERVAL '28 days' PRECEDING AND CURRENT ROW) FROM samples), monthly AS (SELECT time_bucket('1 month', timestamp) AS time, 'Monthly average' AS metric, AVG(value) AS value FROM samples GROUP BY 1) SELECT time, metric, value FROM trends UNION ALL SELECT time, metric, value FROM monthly ORDER BY time", "refId": "A"}],
+      "title": "Weight",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "timescaledb"},
+      "fieldConfig": {"defaults": {"unit": "percent"}, "overrides": []},
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 0},
+      "id": 2,
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}},
+      "targets": [{"format": "time_series", "rawQuery": true, "rawSql": "WITH samples AS (SELECT timestamp, fat_ratio_pct AS value FROM body_composition WHERE $__timeFilter(timestamp) AND fat_ratio_pct IS NOT NULL), trends AS (SELECT timestamp AS time, 'Raw' AS metric, value FROM samples UNION ALL SELECT timestamp, '7-day average', AVG(value) OVER (ORDER BY timestamp RANGE BETWEEN INTERVAL '7 days' PRECEDING AND CURRENT ROW) FROM samples UNION ALL SELECT timestamp, '28-day average', AVG(value) OVER (ORDER BY timestamp RANGE BETWEEN INTERVAL '28 days' PRECEDING AND CURRENT ROW) FROM samples), monthly AS (SELECT time_bucket('1 month', timestamp) AS time, 'Monthly average' AS metric, AVG(value) AS value FROM samples GROUP BY 1) SELECT time, metric, value FROM trends UNION ALL SELECT time, metric, value FROM monthly ORDER BY time", "refId": "A"}],
+      "title": "Body Fat %",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "timescaledb"},
+      "fieldConfig": {"defaults": {"unit": "masskg"}, "overrides": []},
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 9},
+      "id": 3,
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}},
+      "targets": [{"format": "time_series", "rawQuery": true, "rawSql": "WITH samples AS (SELECT timestamp, fat_mass_kg AS value FROM body_composition WHERE $__timeFilter(timestamp) AND fat_mass_kg IS NOT NULL), trends AS (SELECT timestamp AS time, 'Raw' AS metric, value FROM samples UNION ALL SELECT timestamp, '7-day average', AVG(value) OVER (ORDER BY timestamp RANGE BETWEEN INTERVAL '7 days' PRECEDING AND CURRENT ROW) FROM samples UNION ALL SELECT timestamp, '28-day average', AVG(value) OVER (ORDER BY timestamp RANGE BETWEEN INTERVAL '28 days' PRECEDING AND CURRENT ROW) FROM samples), monthly AS (SELECT time_bucket('1 month', timestamp) AS time, 'Monthly average' AS metric, AVG(value) AS value FROM samples GROUP BY 1) SELECT time, metric, value FROM trends UNION ALL SELECT time, metric, value FROM monthly ORDER BY time", "refId": "A"}],
+      "title": "Fat Mass",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "timescaledb"},
+      "fieldConfig": {"defaults": {"unit": "masskg"}, "overrides": []},
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 9},
+      "id": 4,
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}},
+      "targets": [{"format": "time_series", "rawQuery": true, "rawSql": "WITH samples AS (SELECT timestamp, muscle_mass_kg AS value FROM body_composition WHERE $__timeFilter(timestamp) AND muscle_mass_kg IS NOT NULL), trends AS (SELECT timestamp AS time, 'Raw' AS metric, value FROM samples UNION ALL SELECT timestamp, '7-day average', AVG(value) OVER (ORDER BY timestamp RANGE BETWEEN INTERVAL '7 days' PRECEDING AND CURRENT ROW) FROM samples UNION ALL SELECT timestamp, '28-day average', AVG(value) OVER (ORDER BY timestamp RANGE BETWEEN INTERVAL '28 days' PRECEDING AND CURRENT ROW) FROM samples), monthly AS (SELECT time_bucket('1 month', timestamp) AS time, 'Monthly average' AS metric, AVG(value) AS value FROM samples GROUP BY 1) SELECT time, metric, value FROM trends UNION ALL SELECT time, metric, value FROM monthly ORDER BY time", "refId": "A"}],
+      "title": "Muscle Mass",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "timescaledb"},
+      "fieldConfig": {"defaults": {"unit": "masskg"}, "overrides": []},
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 18},
+      "id": 5,
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}},
+      "targets": [{"format": "time_series", "rawQuery": true, "rawSql": "WITH samples AS (SELECT timestamp, fat_free_mass_kg AS value FROM body_composition WHERE $__timeFilter(timestamp) AND fat_free_mass_kg IS NOT NULL), trends AS (SELECT timestamp AS time, 'Raw' AS metric, value FROM samples UNION ALL SELECT timestamp, '7-day average', AVG(value) OVER (ORDER BY timestamp RANGE BETWEEN INTERVAL '7 days' PRECEDING AND CURRENT ROW) FROM samples UNION ALL SELECT timestamp, '28-day average', AVG(value) OVER (ORDER BY timestamp RANGE BETWEEN INTERVAL '28 days' PRECEDING AND CURRENT ROW) FROM samples), monthly AS (SELECT time_bucket('1 month', timestamp) AS time, 'Monthly average' AS metric, AVG(value) AS value FROM samples GROUP BY 1) SELECT time, metric, value FROM trends UNION ALL SELECT time, metric, value FROM monthly ORDER BY time", "refId": "A"}],
+      "title": "Fat-Free Mass",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "timescaledb"},
+      "fieldConfig": {"defaults": {"unit": "none"}, "overrides": []},
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 18},
+      "id": 6,
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}},
+      "targets": [{"format": "time_series", "rawQuery": true, "rawSql": "WITH samples AS (SELECT timestamp, fat_free_mass_kg / NULLIF(fat_mass_kg, 0) AS value FROM body_composition WHERE $__timeFilter(timestamp) AND fat_free_mass_kg IS NOT NULL AND fat_mass_kg IS NOT NULL), trends AS (SELECT timestamp AS time, 'Raw' AS metric, value FROM samples UNION ALL SELECT timestamp, '7-day average', AVG(value) OVER (ORDER BY timestamp RANGE BETWEEN INTERVAL '7 days' PRECEDING AND CURRENT ROW) FROM samples UNION ALL SELECT timestamp, '28-day average', AVG(value) OVER (ORDER BY timestamp RANGE BETWEEN INTERVAL '28 days' PRECEDING AND CURRENT ROW) FROM samples), monthly AS (SELECT time_bucket('1 month', timestamp) AS time, 'Monthly average' AS metric, AVG(value) AS value FROM samples GROUP BY 1) SELECT time, metric, value FROM trends UNION ALL SELECT time, metric, value FROM monthly ORDER BY time", "refId": "A"}],
+      "title": "Lean-to-Fat Ratio",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "6h",
+  "schemaVersion": 41,
+  "tags": ["withings", "body-composition"],
+  "templating": {"list": []},
+  "time": {"from": "now-1y", "to": "now"},
+  "timezone": "browser",
+  "title": "Body Recomposition",
+  "uid": "body-recomposition",
+  "version": 1
+}

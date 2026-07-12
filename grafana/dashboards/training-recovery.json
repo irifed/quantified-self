@@ -1,0 +1,79 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {"type": "postgres", "uid": "timescaledb"},
+      "fieldConfig": {"defaults": {"unit": "none"}, "overrides": []},
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 0},
+      "id": 1,
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}},
+      "targets": [{"format": "time_series", "rawQuery": true, "rawSql": "SELECT timestamp AS time, fitness AS value, 'Fitness' AS metric FROM daily_recovery WHERE $__timeFilter(timestamp) AND fitness IS NOT NULL UNION ALL SELECT timestamp AS time, fatigue AS value, 'Fatigue' AS metric FROM daily_recovery WHERE $__timeFilter(timestamp) AND fatigue IS NOT NULL UNION ALL SELECT timestamp AS time, form AS value, 'Form' AS metric FROM daily_recovery WHERE $__timeFilter(timestamp) AND form IS NOT NULL ORDER BY time", "refId": "A"}],
+      "title": "Fitness / Fatigue / Form",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "timescaledb"},
+      "fieldConfig": {"defaults": {"unit": "ms"}, "overrides": []},
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 0},
+      "id": 2,
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}},
+      "targets": [{"format": "time_series", "rawQuery": true, "rawSql": "SELECT timestamp AS time, hrv AS value, 'HRV' AS metric FROM daily_recovery WHERE $__timeFilter(timestamp) AND hrv IS NOT NULL ORDER BY timestamp", "refId": "A"}],
+      "title": "HRV",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "timescaledb"},
+      "fieldConfig": {"defaults": {"unit": "bpm"}, "overrides": []},
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 9},
+      "id": 3,
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}},
+      "targets": [{"format": "time_series", "rawQuery": true, "rawSql": "SELECT timestamp AS time, resting_hr AS value, 'Resting HR' AS metric FROM daily_recovery WHERE $__timeFilter(timestamp) AND resting_hr IS NOT NULL ORDER BY timestamp", "refId": "A"}],
+      "title": "Resting HR",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "timescaledb"},
+      "fieldConfig": {"defaults": {"unit": "h"}, "overrides": []},
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 9},
+      "id": 4,
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}},
+      "targets": [{"format": "time_series", "rawQuery": true, "rawSql": "SELECT timestamp AS time, sleep_hours AS value, 'Sleep hours' AS metric FROM daily_recovery WHERE $__timeFilter(timestamp) AND sleep_hours IS NOT NULL ORDER BY timestamp", "refId": "A"}],
+      "title": "Sleep",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "timescaledb"},
+      "fieldConfig": {"defaults": {"unit": "none"}, "overrides": []},
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 18},
+      "id": 5,
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}},
+      "targets": [{"format": "time_series", "rawQuery": true, "rawSql": "SELECT time_bucket('1 day', timestamp) AS time, SUM(training_load) AS value, 'Training Load' AS metric FROM workouts WHERE $__timeFilter(timestamp) AND training_load IS NOT NULL GROUP BY 1 ORDER BY 1", "refId": "A"}],
+      "title": "Training Load",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "timescaledb"},
+      "fieldConfig": {"defaults": {"unit": "none"}, "overrides": []},
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 18},
+      "id": 6,
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}},
+      "targets": [{"format": "time_series", "rawQuery": true, "rawSql": "SELECT time_bucket('1 day', timestamp) AS time, COUNT(*)::float AS value, 'Workout Count' AS metric FROM workouts WHERE $__timeFilter(timestamp) GROUP BY 1 ORDER BY 1", "refId": "A"}],
+      "title": "Workout Count",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "6h",
+  "schemaVersion": 41,
+  "tags": ["intervals-icu", "training", "recovery"],
+  "templating": {"list": []},
+  "time": {"from": "now-1y", "to": "now"},
+  "timezone": "browser",
+  "title": "Training & Recovery",
+  "uid": "training-recovery",
+  "version": 1
+}

@@ -100,5 +100,19 @@ manually:
 podman compose run --rm migrations
 ```
 
-Milestone 1 intentionally does not include intervals.icu, recovery, workouts, annotations, or
-cross-source analytics.
+Manual annotations, office-day analysis, period comparison, and cross-source analytics are not
+implemented yet.
+
+## intervals.icu Sync
+
+The next milestone adds intervals.icu as the training and recovery source. Generate an API key in
+intervals.icu **Settings → Developer Settings**, then add it to `.env`:
+
+```env
+INTERVALS_API_KEY=your_api_key
+INTERVALS_ATHLETE_ID=0
+```
+
+`0` selects the athlete associated with the API key. The sync imports wellness records into
+`daily_recovery` and activities into `workouts`, then Grafana provisions the **Training & Recovery**
+dashboard automatically.

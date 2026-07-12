@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     withings_client_id: str = ""
     withings_client_secret: SecretStr = SecretStr("")
     withings_refresh_token: SecretStr = SecretStr("")
+    intervals_api_key: SecretStr = SecretStr("")
+    intervals_athlete_id: str = "0"
+    intervals_initial_sync_days: int = Field(default=3650, ge=1)
     timezone: str = Field(default="Europe/Amsterdam", validation_alias="TZ")
     sync_interval_hours: int = Field(default=6, ge=1, le=168)
     log_level: str = "INFO"
@@ -52,6 +55,10 @@ class Settings(BaseSettings):
         ]
         if missing:
             raise ValueError(f"Missing required Withings settings: {', '.join(missing)}")
+
+    @property
+    def intervals_configured(self) -> bool:
+        return bool(self.intervals_api_key.get_secret_value())
 
 
 @lru_cache

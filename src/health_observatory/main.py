@@ -2,7 +2,7 @@ import argparse
 import logging
 
 from health_observatory.config import get_settings
-from health_observatory.scheduler import run_scheduler, run_withings_sync
+from health_observatory.scheduler import run_intervals_sync, run_scheduler, run_withings_sync
 
 
 def main() -> None:
@@ -16,6 +16,7 @@ def main() -> None:
     )
     if args.command == "sync":
         run_withings_sync(settings)
+        run_intervals_sync(settings)
     else:
         run_scheduler(settings)
 

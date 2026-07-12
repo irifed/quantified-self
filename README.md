@@ -71,6 +71,9 @@ podman compose logs -f sync
 # Trigger a one-off sync
 podman compose run --rm sync uv run --no-sync health-observatory sync
 
+# Trigger only intervals.icu sync
+podman compose run --rm sync uv run --no-sync health-observatory sync-intervals
+
 # Stop services without deleting data
 podman compose down
 ```

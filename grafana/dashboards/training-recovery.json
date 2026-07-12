@@ -1,0 +1,111 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {"type": "postgres", "uid": "timescaledb"},
+      "fieldConfig": {"defaults": {"unit": "none"}, "overrides": []},
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 0},
+      "id": 1,
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}},
+      "targets": [{"format": "time_series", "rawQuery": true, "rawSql": "SELECT timestamp AS time, fitness AS value, 'Fitness' AS metric FROM daily_recovery WHERE $__timeFilter(timestamp) AND fitness IS NOT NULL UNION ALL SELECT timestamp AS time, fatigue AS value, 'Fatigue' AS metric FROM daily_recovery WHERE $__timeFilter(timestamp) AND fatigue IS NOT NULL UNION ALL SELECT timestamp AS time, form AS value, 'Form' AS metric FROM daily_recovery WHERE $__timeFilter(timestamp) AND form IS NOT NULL ORDER BY time", "refId": "A"}],
+      "title": "Fitness / Fatigue / Form",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "timescaledb"},
+      "fieldConfig": {"defaults": {"unit": "ms"}, "overrides": []},
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 0},
+      "id": 2,
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}},
+      "targets": [{"format": "time_series", "rawQuery": true, "rawSql": "SELECT timestamp AS time, hrv AS value, 'HRV' AS metric FROM daily_recovery WHERE $__timeFilter(timestamp) AND hrv IS NOT NULL ORDER BY timestamp", "refId": "A"}],
+      "title": "HRV (SDNN)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "timescaledb"},
+      "fieldConfig": {"defaults": {"unit": "bpm"}, "overrides": []},
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 9},
+      "id": 3,
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}},
+      "targets": [{"format": "time_series", "rawQuery": true, "rawSql": "SELECT timestamp AS time, resting_hr AS value, 'Resting HR' AS metric FROM daily_recovery WHERE $__timeFilter(timestamp) AND resting_hr IS NOT NULL ORDER BY timestamp", "refId": "A"}],
+      "title": "Resting HR",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "timescaledb"},
+      "fieldConfig": {"defaults": {"unit": "h"}, "overrides": []},
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 9},
+      "id": 4,
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}},
+      "targets": [{"format": "time_series", "rawQuery": true, "rawSql": "SELECT timestamp AS time, sleep_hours AS value, 'Sleep hours' AS metric FROM daily_recovery WHERE $__timeFilter(timestamp) AND sleep_hours IS NOT NULL ORDER BY timestamp", "refId": "A"}],
+      "title": "Sleep",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "timescaledb"},
+      "fieldConfig": {"defaults": {"unit": "none"}, "overrides": []},
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 18},
+      "id": 5,
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}},
+      "targets": [{"format": "time_series", "rawQuery": true, "rawSql": "SELECT time_bucket('1 day', timestamp) AS time, SUM(training_load) AS value, 'Training Load' AS metric FROM workouts WHERE $__timeFilter(timestamp) AND training_load IS NOT NULL GROUP BY 1 ORDER BY 1", "refId": "A"}],
+      "title": "Training Load",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "timescaledb"},
+      "fieldConfig": {"defaults": {"unit": "none"}, "overrides": []},
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 18},
+      "id": 6,
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}},
+      "targets": [{"format": "time_series", "rawQuery": true, "rawSql": "SELECT time_bucket('1 day', timestamp) AS time, COUNT(*)::float AS value, 'Workout Count' AS metric FROM workouts WHERE $__timeFilter(timestamp) GROUP BY 1 ORDER BY 1", "refId": "A"}],
+      "title": "Workout Count",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "timescaledb"},
+      "fieldConfig": {"defaults": {"unit": "kcal"}, "overrides": []},
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 27},
+      "id": 7,
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}},
+      "targets": [{"format": "time_series", "rawQuery": true, "rawSql": "SELECT time_bucket('1 day', timestamp) AS time, SUM(calories) AS value, 'Calories Burned' AS metric FROM workouts WHERE $__timeFilter(timestamp) AND calories IS NOT NULL GROUP BY 1 ORDER BY 1", "refId": "A"}],
+      "title": "Calories Burned",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "timescaledb"},
+      "description": "Cumulative workouts by year, aligned by month/day so zooming to a month compares that month across years.",
+      "fieldConfig": {"defaults": {"unit": "none"}, "overrides": []},
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 36},
+      "id": 8,
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}},
+      "targets": [{"format": "time_series", "rawQuery": true, "rawSql": "WITH bounds AS (SELECT EXTRACT(YEAR FROM now())::int AS comparison_year), years AS (SELECT DISTINCT EXTRACT(YEAR FROM timestamp)::int AS workout_year FROM workouts), calendar AS (SELECT y.workout_year, day::date AS workout_day FROM years y CROSS JOIN LATERAL generate_series(make_date(y.workout_year, 1, 1), CASE WHEN y.workout_year = EXTRACT(YEAR FROM now())::int THEN CURRENT_DATE ELSE make_date(y.workout_year, 12, 31) END, INTERVAL '1 day') day WHERE NOT (EXTRACT(MONTH FROM day) = 2 AND EXTRACT(DAY FROM day) = 29)), daily AS (SELECT timestamp::date AS workout_day, COUNT(*)::float AS value FROM workouts GROUP BY 1), cumulative AS (SELECT c.workout_year, c.workout_day, SUM(COALESCE(d.value, 0)) OVER (PARTITION BY c.workout_year ORDER BY c.workout_day) AS value FROM calendar c LEFT JOIN daily d ON d.workout_day = c.workout_day), aligned AS (SELECT make_timestamptz((SELECT comparison_year FROM bounds), EXTRACT(MONTH FROM workout_day)::int, EXTRACT(DAY FROM workout_day)::int, 0, 0, 0) AS time, value, workout_year::text AS metric FROM cumulative) SELECT time, value, metric FROM aligned WHERE $__timeFilter(time) ORDER BY time, metric", "refId": "A"}],
+      "title": "Cumulative Workouts by Year",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "timescaledb"},
+      "description": "Cumulative calories burned by year, aligned by month/day so zooming to a month compares that month across years.",
+      "fieldConfig": {"defaults": {"unit": "kcal"}, "overrides": []},
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 36},
+      "id": 9,
+      "options": {"legend": {"displayMode": "table", "placement": "bottom"}},
+      "targets": [{"format": "time_series", "rawQuery": true, "rawSql": "WITH bounds AS (SELECT EXTRACT(YEAR FROM now())::int AS comparison_year), years AS (SELECT DISTINCT EXTRACT(YEAR FROM timestamp)::int AS workout_year FROM workouts), calendar AS (SELECT y.workout_year, day::date AS workout_day FROM years y CROSS JOIN LATERAL generate_series(make_date(y.workout_year, 1, 1), CASE WHEN y.workout_year = EXTRACT(YEAR FROM now())::int THEN CURRENT_DATE ELSE make_date(y.workout_year, 12, 31) END, INTERVAL '1 day') day WHERE NOT (EXTRACT(MONTH FROM day) = 2 AND EXTRACT(DAY FROM day) = 29)), daily AS (SELECT timestamp::date AS workout_day, SUM(calories) AS value FROM workouts WHERE calories IS NOT NULL GROUP BY 1), cumulative AS (SELECT c.workout_year, c.workout_day, SUM(COALESCE(d.value, 0)) OVER (PARTITION BY c.workout_year ORDER BY c.workout_day) AS value FROM calendar c LEFT JOIN daily d ON d.workout_day = c.workout_day), aligned AS (SELECT make_timestamptz((SELECT comparison_year FROM bounds), EXTRACT(MONTH FROM workout_day)::int, EXTRACT(DAY FROM workout_day)::int, 0, 0, 0) AS time, value, workout_year::text AS metric FROM cumulative) SELECT time, value, metric FROM aligned WHERE $__timeFilter(time) ORDER BY time, metric", "refId": "A"}],
+      "title": "Cumulative Calories Burned by Year",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "6h",
+  "schemaVersion": 41,
+  "tags": ["intervals-icu", "training", "recovery"],
+  "templating": {"list": []},
+  "time": {"from": "now/y", "to": "now/y+1y"},
+  "timezone": "browser",
+  "title": "Training & Recovery",
+  "uid": "training-recovery",
+  "version": 1
+}

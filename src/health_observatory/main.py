@@ -2,12 +2,17 @@ import argparse
 import logging
 
 from health_observatory.config import get_settings
-from health_observatory.scheduler import run_scheduler, run_withings_sync
+from health_observatory.scheduler import run_intervals_sync, run_scheduler, run_withings_sync
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Personal Health Observatory")
-    parser.add_argument("command", choices=("scheduler", "sync"), nargs="?", default="scheduler")
+    parser.add_argument(
+        "command",
+        choices=("scheduler", "sync", "sync-withings", "sync-intervals"),
+        nargs="?",
+        default="scheduler",
+    )
     args = parser.parse_args()
     settings = get_settings()
     logging.basicConfig(
@@ -16,6 +21,11 @@ def main() -> None:
     )
     if args.command == "sync":
         run_withings_sync(settings)
+        run_intervals_sync(settings)
+    elif args.command == "sync-withings":
+        run_withings_sync(settings)
+    elif args.command == "sync-intervals":
+        run_intervals_sync(settings)
     else:
         run_scheduler(settings)
 

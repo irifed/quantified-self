@@ -31,3 +31,23 @@ Before finishing each task:
 - run tests
 - run lint/type checks if configured
 - verify docker-compose config is valid
+
+## Containers and deployment
+
+Development/runtime target:
+
+- Laptop: Podman
+- Homelab: Ubuntu Server + Podman
+- Compose format should stay Docker Compose compatible
+
+Use:
+
+- `podman compose up -d`
+
+Avoid:
+
+- Docker-specific features
+- privileged containers
+- host networking unless necessary
+- SELinux-specific volume flags like `:Z`
+-

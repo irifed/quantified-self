@@ -54,10 +54,11 @@ def seconds_to_hours(value: Any) -> float | None:
 def normalize_wellness(record: dict[str, Any]) -> dict[str, Any]:
     fitness = number(record, "ctl")
     fatigue = number(record, "atl")
+    hrv = number(record, "hrv")
     return {
         "timestamp": date_timestamp(str(record["id"])),
         "resting_hr": number(record, "restingHR"),
-        "hrv": number(record, "hrv"),
+        "hrv": hrv if hrv is not None else number(record, "hrvSDNN"),
         "sleep_hours": seconds_to_hours(record.get("sleepSecs")),
         "sleep_score": number(record, "sleepScore"),
         "fitness": fitness,
@@ -114,6 +115,7 @@ class IntervalsClient:
                     "atl",
                     "restingHR",
                     "hrv",
+                    "hrvSDNN",
                     "sleepSecs",
                     "sleepScore",
                 ],

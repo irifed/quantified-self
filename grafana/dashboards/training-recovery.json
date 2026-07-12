@@ -23,7 +23,7 @@
       "id": 2,
       "options": {"legend": {"displayMode": "table", "placement": "bottom"}},
       "targets": [{"format": "time_series", "rawQuery": true, "rawSql": "SELECT timestamp AS time, hrv AS value, 'HRV' AS metric FROM daily_recovery WHERE $__timeFilter(timestamp) AND hrv IS NOT NULL ORDER BY timestamp", "refId": "A"}],
-      "title": "HRV",
+      "title": "HRV (SDNN)",
       "type": "timeseries"
     },
     {

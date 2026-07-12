@@ -40,6 +40,12 @@ def test_normalize_wellness_maps_recovery_fields() -> None:
     assert result["source"] == "intervals_icu"
 
 
+def test_normalize_wellness_uses_hrv_sdnn_when_rmssd_is_absent() -> None:
+    result = normalize_wellness({"id": "2026-07-12", "hrvSDNN": 41.5})
+
+    assert result["hrv"] == 41.5
+
+
 def test_normalize_activity_maps_workout_fields() -> None:
     result = normalize_activity(
         {
@@ -76,6 +82,7 @@ def test_client_uses_api_key_basic_auth_and_browser_user_agent() -> None:
     assert client.list_wellness(date(2026, 7, 1), date(2026, 7, 12)) == []
     assert client.list_activities(date(2026, 7, 1), date(2026, 7, 12)) == []
     assert str(requests[0].url).startswith(f"{BASE_URL}/athlete/0/wellness")
+    assert "fields=hrvSDNN" in str(requests[0].url)
     assert str(requests[1].url).startswith(f"{BASE_URL}/athlete/0/activities")
     assert requests[0].headers["authorization"].startswith("Basic ")
     assert requests[0].headers["user-agent"].startswith("Mozilla/5.0")

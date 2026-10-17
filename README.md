@@ -19,20 +19,19 @@ measurement type are retained alongside normalized values.
 ## Withings credentials
 
 Create an application in the Withings Developer Dashboard and set its callback URL to the exact
-value of `WITHINGS_REDIRECT_URI`. Then obtain tokens with the local OAuth helper:
+value of `WITHINGS_REDIRECT_URI`. Prepare `.env` before starting the OAuth helper:
 
 ```bash
 cp .env.example .env
-# Fill in WITHINGS_CLIENT_ID and WITHINGS_CLIENT_SECRET.
-uv run python scripts/withings_oauth.py
+# Fill in WITHINGS_CLIENT_ID, WITHINGS_CLIENT_SECRET, and WITHINGS_REDIRECT_URI.
 ```
 
 The script opens the Withings authorization page, receives the callback through FastAPI, prints
 the access and refresh tokens, and writes both values to `.env`. The sync service refreshes access
 tokens automatically and stores rotated refresh tokens in PostgreSQL.
 
-For an ngrok callback, forward the public URL to the local OAuth server and include `/callback` in
-the registered URI:
+For an ngrok callback, use a domain registered with Withings. The redirect URI can be the domain
+root or end in `/callback`; it must match the registered URI exactly, including its path:
 
 ```env
 WITHINGS_REDIRECT_URI=https://your-domain.ngrok-free.dev/callback
@@ -41,9 +40,17 @@ WITHINGS_OAUTH_PORT=8000
 ```
 
 ```bash
-ngrok http 8000
+# Terminal 1: keep this running until authorization completes.
+ngrok http 8000 --url https://your-domain.ngrok-free.dev
+
+# Terminal 2: run after ngrok reports the tunnel is online.
 uv run python scripts/withings_oauth.py
 ```
+
+The `--url` value must be the domain in `WITHINGS_REDIRECT_URI` (without a trailing `/callback` path).
+If the browser shows `ERR_NGROK_3200`, the tunnel is offline. Start or reconnect ngrok, then use
+the authorization URL printed by the still-running OAuth helper to authorize again. If the helper
+has exited, rerun it. Stop ngrok after the helper reports that tokens were saved.
 
 Do not commit `.env` or real credentials.
 

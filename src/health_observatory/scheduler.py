@@ -49,6 +49,9 @@ def run_scheduler(settings: Settings) -> None:
         max_instances=1,
         coalesce=True,
     )
-    run_withings_sync(settings)
-    run_intervals_sync(settings)
+    for source, sync in (("Withings", run_withings_sync), ("intervals.icu", run_intervals_sync)):
+        try:
+            sync(settings)
+        except Exception:
+            logger.exception("%s initial sync failed; scheduled retries will continue", source)
     scheduler.start()

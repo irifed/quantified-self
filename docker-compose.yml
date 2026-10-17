@@ -24,7 +24,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       TZ: ${TZ:-Europe/Amsterdam}
     volumes:
-      - timescale-data:/var/lib/postgresql/data
+      - ./data/postgres:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
@@ -65,14 +65,10 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - grafana-data:/var/lib/grafana
+      - ./data/grafana:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
       - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
     depends_on:
       migrations:
         condition: service_completed_successfully
     restart: unless-stopped
-
-volumes:
-  timescale-data:
-  grafana-data:

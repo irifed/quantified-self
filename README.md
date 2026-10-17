@@ -56,6 +56,14 @@ cp .env.example .env
 podman compose up --build -d
 ```
 
+PostgreSQL and Grafana store their state in `./data/postgres` and `./data/grafana` on the host.
+The `data/` directory is ignored by Git. On macOS, keep this project under a directory shared
+with the Podman machine (the default machine shares the user's home directory). These bind mounts
+survive replacing the Podman machine, but they are not backups. For a consistent filesystem backup,
+stop the stack before copying `data/`; for a live PostgreSQL backup, use `pg_dump`.
+Do not use `podman compose down -v` when using a Compose file with named volumes from an older
+installation unless you have confirmed those volumes are no longer needed.
+
 `DATABASE_URL` is optional. Compose builds the connection URL from the PostgreSQL fields safely,
 including when the password contains URL-special characters.
 
@@ -74,12 +82,38 @@ podman compose run --rm sync uv run --no-sync health-observatory sync
 # Trigger only intervals.icu sync
 podman compose run --rm sync uv run --no-sync health-observatory sync-intervals
 
+# Trigger only Withings sync
+podman compose run --rm sync uv run --no-sync health-observatory sync-withings
+
 # Stop services without deleting data
 podman compose down
 ```
 
 The first sync imports `INITIAL_SYNC_DAYS` of history. Later runs overlap the prior day and upsert,
 so corrections made by Withings are retained without duplicate rows.
+
+## Rebuild after replacing a Podman machine
+
+Keep your existing `.env`. Before the first sync into an empty database, set `INITIAL_SYNC_DAYS`
+and `INTERVALS_INITIAL_SYNC_DAYS` large enough to cover your history. The defaults are 3650 days
+(about ten years). Then run:
+
+```bash
+podman compose up --build -d timescaledb migrations grafana
+podman compose run --rm sync uv run --no-sync health-observatory sync-intervals
+podman compose run --rm sync uv run --no-sync health-observatory sync-withings
+podman compose up -d sync
+podman compose ps
+```
+
+The intervals.icu API key in `.env` can be reused. Withings rotates refresh tokens and stores the
+latest token in PostgreSQL; after losing the old database, the token in `.env` may no longer work.
+If the Withings sync returns an authentication error, run `uv run python scripts/withings_oauth.py`
+to obtain fresh tokens, then retry `sync-withings`.
+
+Open <http://localhost:3000> and check the **Body Recomposition** and **Training & Recovery**
+dashboards. Back up `data/` while the stack is stopped, or use a PostgreSQL dump plus a backup of
+`data/grafana` while Grafana is stopped. Keep an additional copy outside this Mac.
 
 ## Development
 
@@ -108,7 +142,7 @@ implemented yet.
 
 ## intervals.icu Sync
 
-The next milestone adds intervals.icu as the training and recovery source. Generate an API key in
+Generate an API key in
 intervals.icu **Settings → Developer Settings**, then add it to `.env`:
 
 ```env

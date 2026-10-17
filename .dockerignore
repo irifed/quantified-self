@@ -1,6 +1,7 @@
 .git
 .venv
 .env
+data/
 .DS_Store
 __pycache__
 .pytest_cache
